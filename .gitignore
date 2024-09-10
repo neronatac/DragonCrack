@@ -1,0 +1,17 @@
+# Vivado
+project_FPGA/*
+!project_FPGA/DragonCrackFPGA.xpr
+!project_FPGA/DragonCrackFPGA.srcs
+
+# IP repository
+ip_repo/edit*
+
+# Python
+python_driver/*
+!python_driver/*.py
+
+# Vitis
+# done in project_vitis/workspace folder (to be able to keep it)
+
+# others
+.Xil
