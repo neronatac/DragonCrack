@@ -186,7 +186,7 @@ class DESCracker(LoggingMixin):
         ref2 = ref2 or bytes([0xFF] * 8)
         mask2 = mask2 or bytes(8)
 
-        self.logger.info(f"Launching exhaust from 0x{start.hex(' ', 4)} to 0x{end.hex(' ', 4)} on 1 worker")
+        self.logger.info(f"Launching exhaust from 0x{start.hex('_', 4)} to 0x{end.hex('_', 4)} on 1 worker")
 
         # reset module to clean it then set plaintext, refs and masks
         module.cmd_des_disable()
@@ -294,75 +294,76 @@ class DESCracker(LoggingMixin):
         for m in self._modules:
             self.logger.info(f"Beginning of tests on module {m.ip}")
 
-            # test if it stops when valid key is found on REF1 and REF2 then resume and end
-            for ref_nbr in (1, 2):
-                self.logger.info(f"Testing single match on REF{ref_nbr}")
+            for w in range(m.workers_nbr):
+                # test if it stops when valid key is found on REF1 and REF2 then resume and end
+                for ref_nbr in (1, 2):
+                    self.logger.info(f"Testing single match on REF{ref_nbr}")
+                    plaintext = bytes.fromhex('123456ABCD132536')
+                    valid_key = bytes.fromhex('ab7420c266f36e')
+                    mask = bytes([0xff] * 8)
+                    ref = bytes.fromhex('C0B7A8D05F3A829C')
+                    start_key = bytes.fromhex('ab7420c266f350')
+                    end_key = bytes.fromhex('ab7420c266f380')
+
+                    if ref_nbr == 1:
+                        self.exhaust_keys_single_worker(m, w, plaintext, ref, mask, start_key, end_key)
+                    else:
+                        self.exhaust_keys_single_worker(m, w, plaintext,
+                                                        bytes([0xff] * 8), bytes([0x00] * 8),
+                                                        start_key, end_key,
+                                                        ref, mask)
+
+                    # test if it stops
+                    begin_time = time()
+                    while time() - begin_time < 1:
+                        if m.cmd_des_result_available(w):
+                            break
+                        elif m.cmd_des_ended(w):
+                            m.cmd_des_get_current_key(w)
+                            raise DESCrackerError(f"Module{m.ip} (worker {w}) did not get a result")
+                    else:
+                        m.cmd_des_get_current_key(w)
+                        raise DESCrackerError(f"Module{m.ip} (worker {w}) did not get a result")
+
+                    res = m.cmd_des_get_result(w)
+                    if res[0] != ref_nbr:
+                        raise DESCrackerError(f"Expected result on REF{ref_nbr}, got REF{res[0]+1}")
+                    if res[1] != valid_key:
+                        raise DESCrackerError(f"Expected result {valid_key.hex()}, got {res[1].hex()}")
+
+                    # test if it resumes when result is read
+                    begin_time = time()
+                    while time() - begin_time < 1:
+                        if m.cmd_des_ended(w):
+                            break
+                    else:
+                        m.cmd_des_get_current_key(w)
+                        raise DESCrackerError(f"Module{m.ip} (worker {w}) did not resume and ended")
+
+                # test 10 consecutive matches
+                self.logger.info(f"Testing consecutive matches")
                 plaintext = bytes.fromhex('123456ABCD132536')
-                valid_key = bytes.fromhex('ab7420c266f36e')
-                mask = bytes([0xff] * 8)
-                ref = bytes.fromhex('C0B7A8D05F3A829C')
-                start_key = bytes.fromhex('ab7420c266f350')
-                end_key = bytes.fromhex('ab7420c266f380')
+                mask = bytes([0x00] * 8)
+                ref = bytes([0x00] * 8)
+                start_key = (0).to_bytes(7)
+                end_key = (9).to_bytes(7)
+                self.exhaust_keys_single_worker(m, w, plaintext, ref, mask, start_key, end_key)
 
-                if ref_nbr == 1:
-                    self.exhaust_keys_single_worker(m, 0, plaintext, ref, mask, start_key, end_key)
-                else:
-                    self.exhaust_keys_single_worker(m, 0, plaintext,
-                                                    bytes([0xff] * 8), bytes([0x00] * 8),
-                                                    start_key, end_key,
-                                                    ref, mask)
-
-                # test if it stops
+                results = []
                 begin_time = time()
                 while time() - begin_time < 1:
-                    if m.cmd_des_result_available(0):
-                        break
-                    elif m.cmd_des_ended(0):
-                        m.cmd_des_get_current_key(0)
-                        raise DESCrackerError(f"Module{m.ip} did not get a result")
-                else:
-                    m.cmd_des_get_current_key(0)
-                    raise DESCrackerError(f"Module{m.ip} did not get a result")
-
-                res = m.cmd_des_get_result(0)
-                if res[0] != ref_nbr:
-                    raise DESCrackerError(f"Expected result on REF{ref_nbr}, got REF{res[0]+1}")
-                if res[1] != valid_key:
-                    raise DESCrackerError(f"Expected result {valid_key.hex()}, got {res[1].hex()}")
-
-                # test if it resumes when result is read
-                begin_time = time()
-                while time() - begin_time < 1:
-                    if m.cmd_des_ended(0):
+                    if m.cmd_des_result_available(w):
+                        results.append(m.cmd_des_get_result(w))
+                    if len(results) == 10:
                         break
                 else:
-                    m.cmd_des_get_current_key(0)
-                    raise DESCrackerError(f"Module{m.ip} did not resume and ended")
+                    m.cmd_des_get_current_key(w)
+                    raise DESCrackerError(f"Module{m.ip} (worker {w}) did not got 10 results within 1s (got {len(results)})")
 
-            # test 10 consecutive matches
-            self.logger.info(f"Testing consecutive matches")
-            plaintext = bytes.fromhex('123456ABCD132536')
-            mask = bytes([0x00] * 8)
-            ref = bytes([0x00] * 8)
-            start_key = (0).to_bytes(7)
-            end_key = (9).to_bytes(7)
-            self.exhaust_keys_single_worker(m, 0, plaintext, ref, mask, start_key, end_key)
-
-            results = []
-            begin_time = time()
-            while time() - begin_time < 1:
-                if m.cmd_des_result_available(0):
-                    results.append(m.cmd_des_get_result(0))
-                if len(results) == 10:
-                    break
-            else:
-                m.cmd_des_get_current_key(0)
-                raise DESCrackerError(f"Module{m.ip} did not got 10 results within 1s (got {len(results)})")
-
-            for i in range(10):
-                if results[i][1] != i.to_bytes(7):
-                    raise DESCrackerError(f"Bad result found for key {i} "
-                                          f"(expected {i.to_bytes(7).hex(' ', 4)}, got {results[i][1].hex(' ', 4)})")
+                for i in range(10):
+                    if results[i][1] != i.to_bytes(7):
+                        raise DESCrackerError(f"Bad result found for key {i} "
+                                              f"(expected {i.to_bytes(7).hex(' ', 4)}, got {results[i][1].hex(' ', 4)})")
 
             self.logger.info(f"Module {m.ip} works well")
 
@@ -391,13 +392,13 @@ if __name__ == '__main__':
     cracker.add_modules('192.168.20.42')
 
     # do tests
-    cracker.test()
+    # cracker.test()
 
     # do benchmarks
-    number = 100_000_000
+    number = 10_000_000_000
     t = cracker.benchmark(number)
     print(f"Benchmark on {number:_} done in {t} seconds")
 
-    number = 1_000
+    number = 10_000
     t = cracker.benchmark(number, True)
     print(f"Benchmark (all match) on {number:_} done in {t} seconds")

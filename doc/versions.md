@@ -16,6 +16,7 @@ defined in the AXI registers model. It takes a lot of resources but this version
 problems.
 - When a worker finds a result that matches the reference and the mask, it is stopped until the result is read. The 
 result consists in the 56-bit key and a bit that indicates against which reference it matches.
+- In workers, DES is done in 1 clock cycle: all combinational, no pipeline
 - Python driver polls continuously result registers to get pending results.
 - In Vivado, default synthesis and implementation are used.
 - In Vitis, the program just execute simple commands received from Python driver. Commands just consist in reading or
@@ -28,3 +29,33 @@ Notes on resources usage (after implementation) of IP:
 | Total  |      8116      |        16550        |
 |  AXI   |      6582      |        16375        |
 | worker |      961       |         175         |
+
+
+## V1 - First real implementation
+
+The goal is to set the working frequency of workers at its maximum value with no negative slack and also to instantiate
+as many workers as possible. Indeed, when usage of FPGA resources will rise, timing will be harder to maintain.
+
+First results:
+
+| Working frequency (MHz) | Number of workers | Theoretical keys/s | Worst negative slack (ns) |   LUT usage   |   FF usage    |
+|:-----------------------:|:-----------------:|:------------------:|:-------------------------:|:-------------:|:-------------:|
+|           25            |         3         |        75 M        |           1.064           | 23.9% (12721) | 16.7% (17819) |
+|           20            |        28         |       560 M        |           1.43            | 96.7% (51482) | 20.9% (22192) |
+
+By doing some tests, it appeared that on a single worker, the maximum frequency is around 27 MHz. With 28 workers,
+frequency could probably be optimised but compilation take 30 min and I did not have enough patience to do multiple
+compilations.
+
+**Note:** for some reason, a bug in IP customisation tool blocked the setting of FCLK_CLKx frequency... From now on, 
+advanced setting ("override clocks" mode) is used.
+
+Notes on resources usage (after implementation) of IP:
+
+| Block  |    Number of LUTs     | Number of FlipFlops |
+|:------:|:---------------------:|:-------------------:|
+| Total  |         50802         |        21283        |
+|  AXI   |         6879          |        16393        |
+| worker | between 1300 and 2300 |         175         |
+
+In this configuration, each worker is implemented using a different number of LUTs.

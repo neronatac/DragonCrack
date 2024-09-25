@@ -52,27 +52,33 @@ This doubles our chance to find the correct key as `K` and `#K` are searched at 
 Here are basic explanations on all versions of DragonCrack. See [doc/versions.md](doc/versions.md) for more details.
 
 ### Benchmarks
+Benchmarks are done on a single module.
 
 When no match is found:
 
-| Version |  Keys/s   | Time to exhaust 2^56 keys |
-|:-------:|:---------:|:-------------------------:|
-|   V0    | 7_968_851 |   286y 267d 11h 28m 52s   |
+| Version |   Keys/s    | Time to exhaust 2^56 keys | Perf against previous |
+|:-------:|:-----------:|:-------------------------:|:---------------------:|
+|   V0    |  7_968_851  |   286y 267d 11h 28m 52s   |                       |
+|   V1    | 552_112_619 |    4y 50d 13h 28m 12s     |        6928 %         |
 
 When all keys match:
 
-| Version | Keys/s | Time to exhaust 2^56 keys  |
-|:-------:|:------:|:--------------------------:|
-|   V0    |   84   | 27110784y 270d 10h 21m 27s |
+| Version | Keys/s | Time to exhaust 2^56 keys  | Perf against previous |
+|:-------:|:------:|:--------------------------:|:---------------------:|
+|   V0    |   84   | 27110784y 270d 10h 21m 27s |                       |
+|   V1    |  211   | 10784658y 190d 13h 33m 19s |         251 %         |
 
 
-### [V0 - Proof of concept](doc/v0/README.md)
+### V0 - Proof of concept
 A single DES worker is implemented, using a very slow clock. Implementation is as naive as possible (even dumb on 
 certain aspects). 
 
+### V1 - First real design ()
+28 workers are implemented with a 20 MHz clock. Implementation of DES is the same as V0.
+
 
 ## Requirements
-- Python >3.12
+- Python >=3.12
 - Vivado 2022.2
 - Vitis 2022.2
 
