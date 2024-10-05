@@ -59,3 +59,26 @@ Notes on resources usage (after implementation) of IP:
 | worker | between 1300 and 2300 |         175         |
 
 In this configuration, each worker is implemented using a different number of LUTs.
+
+
+## V2 - Fully pipelined
+
+In V1, combinational DES implied a very long critical path, limiting the maximum working frequency. In this version, 
+DES are completely pipelined (17 stages) to get rid of path problems. Also, in terms of resources, it uses FFs that
+were left free in V1.
+
+Same strategy as for V1 is used to maximise keys/s. Leading to this result:
+
+| Working frequency (MHz) | Number of workers | Theoretical keys/s | Worst negative slack (ns) |   LUT usage   |   FF usage    |
+|:-----------------------:|:-----------------:|:------------------:|:-------------------------:|:-------------:|:-------------:|
+|          41.7           |        21         |      875.7 M       |           2.353           | 85.7% (45568) | 59.1% (62915) |
+
+Notes on resources usage (after implementation) of IP:
+
+| Block  |    Number of LUTs     | Number of FlipFlops |
+|:------:|:---------------------:|:-------------------:|
+| Total  |         44888         |        62006        |
+|  AXI   |         6596          |        16394        |
+| worker | between 1605 and 2456 |        2172         |
+
+In this configuration, each worker is implemented using a different number of LUTs.
