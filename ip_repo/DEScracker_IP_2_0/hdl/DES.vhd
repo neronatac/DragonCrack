@@ -180,35 +180,6 @@ begin
         end if;
     end process;
     
---    process(clk, reset)
---    begin
---        if reset = '1' then
---            left_parts <= (others => (others => '0'));
---            right_parts <= (others => (others => '0'));
---            valids_sig <= (others => '0');
---            keys_sig <= (others => (others => '0'));
---        elsif rising_edge(clk) then
---            if enable = '1' then
---                left_parts(1) <= ip_out(32 to 63);
---                right_parts(1) <= f_outs(0) xor ip_out(0 to 31);
---                valids_sig(1) <= '1';
---                keys_sig(1) <= key;
---                for i in 2 to 16 loop
---                    left_parts(i) <= right_parts(i-1);
---                    right_parts(i) <= f_outs(i-1) xor left_parts(i-1);
---                    valids_sig(i) <= valids_sig(i-1);
---                    keys_sig(i) <= keys_sig(i-1);
---                end loop;
---            else
---                left_parts <= left_parts;
---                right_parts <= right_parts;
---                valids_sig <= valids_sig;
---                keys_sig <= keys_sig;
---            end if;
---        end if;
---    end process;
-    
-    
     -- F functions
     F_function_inst0 : entity work.F_function
     port map(
