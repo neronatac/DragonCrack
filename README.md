@@ -56,20 +56,12 @@ Benchmarks are done on a single module.
 
 When no match is found:
 
-| Version |   Keys/s    | Time to exhaust 2^56 keys | Perf against previous |
-|:-------:|:-----------:|:-------------------------:|:---------------------:|
-|   V0    |  7_968_851  |   286y 267d 11h 28m 52s   |                       |
-|   V1    | 552_112_619 |    4y 50d 13h 28m 12s     |        6928 %         |
-|   V2    | 859_516_952 |    2y 240d 7h 29m 48s     |         156 %         |
-
-When all keys match:
-
-| Version | Keys/s | Time to exhaust 2^56 keys  | Perf against previous |
-|:-------:|:------:|:--------------------------:|:---------------------:|
-|   V0    |   84   | 27110784y 270d 10h 21m 27s |                       |
-|   V1    |  211   | 10784658y 190d 13h 33m 19s |         251 %         |
-|   V2    |  213   | 10708377y 351d 16h 35m 0s  |         101 %         |
-
+| Version |    Keys/s     | Time to exhaust 2^56 keys | Perf against previous |
+|:-------:|:-------------:|:-------------------------:|:---------------------:|
+|   V0    |   7_968_851   |   286y 267d 11h 28m 52s   |                       |
+|   V1    |  552_112_619  |    4y 50d 13h 28m 12s     |        6928 %         |
+|   V2    |  859_516_952  |    2y 240d 7h 29m 48s     |         156 %         |
+|   V3    | 2_014_867_336 |     1y 48d 22h 9m 7s      |         234 %         |
 
 ### V0 - Proof of concept
 A single DES worker is implemented, using a very slow clock. Implementation is as naive as possible (even dumb on 
@@ -80,6 +72,9 @@ certain aspects).
 
 ### V2 - Fully pipelined
 21 workers are implemented with 41.7 MHz clock. DES are now fully pipelined.
+
+### V3 - Separated clock for DES
+Still 21 workers, but working with a separated clock at 100 MHz.
 
 
 ## Requirements

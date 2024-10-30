@@ -392,13 +392,13 @@ if __name__ == '__main__':
     cracker.add_modules('192.168.20.42')
 
     # do tests
-    # cracker.test()
+    cracker.test()
 
     # do benchmarks
     number = 10_000_000_000
     t = cracker.benchmark(number)
     print(f"Benchmark on {number:_} done in {t} seconds")
 
-    number = 10_000
-    t = cracker.benchmark(number, True)
-    print(f"Benchmark (all match) on {number:_} done in {t} seconds")
+    # number = 10_000
+    # t = cracker.benchmark(number, True)
+    # print(f"Benchmark (all match) on {number:_} done in {t} seconds")

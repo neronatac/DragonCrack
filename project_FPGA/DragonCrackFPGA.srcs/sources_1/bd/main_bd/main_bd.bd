@@ -223,7 +223,7 @@
             "value": "39"
           },
           "DCLK_FREQUENCY": {
-            "value": "41.666666"
+            "value": "40"
           },
           "ENABLE_VCCDDRO_ALARM": {
             "value": "false"
@@ -679,10 +679,10 @@
             "value": "10.000000"
           },
           "PCW_ACT_FPGA0_PERIPHERAL_FREQMHZ": {
-            "value": "41.666666"
+            "value": "40.000000"
           },
           "PCW_ACT_FPGA1_PERIPHERAL_FREQMHZ": {
-            "value": "10.000000"
+            "value": "99.999999"
           },
           "PCW_ACT_FPGA2_PERIPHERAL_FREQMHZ": {
             "value": "10.000000"
@@ -778,10 +778,10 @@
             "value": "0"
           },
           "PCW_CLK0_FREQ": {
-            "value": "41666666"
+            "value": "40000000"
           },
           "PCW_CLK1_FREQ": {
-            "value": "10000000"
+            "value": "99999999"
           },
           "PCW_CLK2_FREQ": {
             "value": "10000000"
@@ -895,7 +895,7 @@
             "value": "1"
           },
           "PCW_EN_CLK1_PORT": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_EN_CLK2_PORT": {
             "value": "0"
@@ -1081,19 +1081,19 @@
             "value": "IO PLL"
           },
           "PCW_FCLK0_PERIPHERAL_DIVISOR0": {
-            "value": "12"
+            "value": "5"
           },
           "PCW_FCLK0_PERIPHERAL_DIVISOR1": {
-            "value": "2"
+            "value": "5"
           },
           "PCW_FCLK1_PERIPHERAL_CLKSRC": {
             "value": "IO PLL"
           },
           "PCW_FCLK1_PERIPHERAL_DIVISOR0": {
-            "value": "1"
+            "value": "5"
           },
           "PCW_FCLK1_PERIPHERAL_DIVISOR1": {
-            "value": "1"
+            "value": "2"
           },
           "PCW_FCLK2_PERIPHERAL_CLKSRC": {
             "value": "IO PLL"
@@ -1116,6 +1116,9 @@
           "PCW_FCLK_CLK0_BUF": {
             "value": "TRUE"
           },
+          "PCW_FCLK_CLK1_BUF": {
+            "value": "TRUE"
+          },
           "PCW_FPGA0_PERIPHERAL_FREQMHZ": {
             "value": "25"
           },
@@ -1129,6 +1132,9 @@
             "value": "50"
           },
           "PCW_FPGA_FCLK0_ENABLE": {
+            "value": "1"
+          },
+          "PCW_FPGA_FCLK1_ENABLE": {
             "value": "1"
           },
           "PCW_GP0_EN_MODIFIABLE_TXN": {
@@ -2204,11 +2210,14 @@
         }
       },
       "DEScracker_IP_0": {
-        "vlnv": "xilinx.com:user:DEScracker_IP:2.0",
-        "xci_name": "main_bd_DEScracker_IP_0_0",
-        "xci_path": "ip\\main_bd_DEScracker_IP_0_0\\main_bd_DEScracker_IP_0_0.xci",
+        "vlnv": "xilinx.com:user:DEScracker_IP:3.0",
+        "xci_name": "main_bd_DEScracker_IP_0_2",
+        "xci_path": "ip\\main_bd_DEScracker_IP_0_2\\main_bd_DEScracker_IP_0_2.xci",
         "inst_hier_path": "DEScracker_IP_0",
         "parameters": {
+          "DEBUG_SIGNALS": {
+            "value": "true"
+          },
           "NBR_WORKERS": {
             "value": "21"
           }
@@ -2242,8 +2251,8 @@
       },
       "ps7_0_axi_periph_M01_AXI": {
         "interface_ports": [
-          "ps7_0_axi_periph/M01_AXI",
-          "DEScracker_IP_0/S00_AXI"
+          "DEScracker_IP_0/S00_AXI",
+          "ps7_0_axi_periph/M01_AXI"
         ]
       }
     },
@@ -2270,6 +2279,12 @@
           "ps7_0_axi_periph/M01_ACLK",
           "processing_system7_0/M_AXI_GP0_ACLK",
           "DEScracker_IP_0/s00_axi_aclk"
+        ]
+      },
+      "processing_system7_0_FCLK_CLK1": {
+        "ports": [
+          "processing_system7_0/FCLK_CLK1",
+          "DEScracker_IP_0/des_clk"
         ]
       },
       "processing_system7_0_FCLK_RESET0_N": {

@@ -82,3 +82,36 @@ Notes on resources usage (after implementation) of IP:
 | worker | between 1605 and 2456 |        2172         |
 
 In this configuration, each worker is implemented using a different number of LUTs.
+
+## V3 - Separated clock for DES
+
+In previous versions, AXI clock is also used as DES workers' clock. By doing a record with a logic analyser on it (next 
+figure), it can be observed that this clock is gated. It implies a drop of performance. This can explain why real 
+performance is always lower than the theoretical one.
+![](gated_AXI_clock.png)
+
+In V2, critical path is not DES anymore. It is situated in AXI peripheral of DES IP. There are two solutions to solve
+this problem:
+- optimise the AXI peripheral
+- create a dedicated clock for DES workers
+
+First, a dedicated clock is created in this version. AXI peripheral will be optimised in further versions.
+
+| Working frequency (MHz) | Number of workers | Theoretical keys/s | Worst negative slack (ns) |   LUT usage   |   FF usage    |
+|:-----------------------:|:-----------------:|:------------------:|:-------------------------:|:-------------:|:-------------:|
+|           100           |        21         |       2.1 G        |           0.561           | 85.3% (45390) | 59.1% (62921) |
+
+Usage is almost the same as V2.
+
+Now that AXI clock and DES clocks are separated, the signal `read_result` must be adapted. Indeed, it is clocked by AXI 
+but works with DES state machine. As shown in next figure, if code is kept as in V3, key number 3 would be skipped.
+(Figure has been generated on [https://wavedrom.com](https://wavedrom.com))
+
+![](read_result_clocks_graph.png)
+
+To avoid this, the DES worker state machine has been changed so that it waits for `read_result = 0` to resume the
+bruteforce. It is slow because each result needs to be read separately (they cannot be read on-the-fly). Considering
+that the number of matches would be low, it is not a big lack of performance.
+
+AXI frequency is lowered to 40 MHz. When it is set higher, the design is unstable. This issue will be adressed when AXI 
+peripheral will be optimised.
