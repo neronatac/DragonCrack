@@ -1,4 +1,4 @@
-# DES cracker v1.0
+# DES cracker v2.0
 ## Product Guide
 
 ### General description
@@ -66,7 +66,7 @@ Number of workers to generate.
 
 | Offset | Reset value |
 |:------:|:-----------:|
-|  0x00  | 0x0100_0000 |
+|  0x00  | 0x0200_0000 |
 
 Fields:
 

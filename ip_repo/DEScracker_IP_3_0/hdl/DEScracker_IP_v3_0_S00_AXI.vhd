@@ -231,7 +231,7 @@ begin
 	      for i in 0 to NUMBER_OF_REGS-1 loop
 	        case i is
 	          when 0 =>
-	            all_regs(i) <= x"01000000";
+	            all_regs(i) <= x"03000000";
 	            
 	          when 7 to 10 =>
 	            all_regs(i) <= (others => '1');
@@ -502,7 +502,6 @@ begin
           end if; 
         end if;     
 	end process;
-	dbg_read_results <= read_results;
 	
 	-- 64-bits signals
 	plaintext <= all_regs(1) & all_regs(2);
@@ -540,6 +539,7 @@ begin
     dbg_mask2 <= mask2;
     dbg_ref1 <= ref1;
     dbg_ref2 <= ref2;
+    dbg_read_results <= read_results;
     
 	-- User logic ends
 

@@ -230,7 +230,7 @@ begin
 	      for i in 0 to NUMBER_OF_REGS-1 loop
 	        case i is
 	          when 0 =>
-	            all_regs(i) <= x"01000000";
+	            all_regs(i) <= x"02000000";
 	            
 	          when 7 to 10 =>
 	            all_regs(i) <= (others => '1');

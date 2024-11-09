@@ -1,4 +1,4 @@
-# DES cracker v1.0
+# DES cracker v3.0
 ## Product Guide
 
 ### General description
@@ -52,9 +52,10 @@ Max number of registers in an AXI4 IP is 512. Thus, nbr_worker is limited to 61.
 
 
 ### Inputs/Outputs
-| Signal     | Type         | Comment                                   |
-|------------|--------------|-------------------------------------------|
-| S_AXI_...  | Input/Output | AXI bus to communicate with other modules |
+| Signal    | Type         | Comment                                   |
+|-----------|--------------|-------------------------------------------|
+| S_AXI_... | Input/Output | AXI bus to communicate with other modules |
+| des_clk   | Input        | Clock of workers                          |
 
 
 ### IP parameters
@@ -66,7 +67,7 @@ Number of workers to generate.
 
 | Offset | Reset value |
 |:------:|:-----------:|
-|  0x00  | 0x0100_0000 |
+|  0x00  | 0x0300_0000 |
 
 Fields:
 

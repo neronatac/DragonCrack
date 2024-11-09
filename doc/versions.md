@@ -113,5 +113,5 @@ To avoid this, the DES worker state machine has been changed so that it waits fo
 bruteforce. It is slow because each result needs to be read separately (they cannot be read on-the-fly). Considering
 that the number of matches would be low, it is not a big lack of performance.
 
-AXI frequency is lowered to 40 MHz. When it is set higher, the design is unstable. This issue will be adressed when AXI 
+AXI frequency is lowered to 40 MHz. When it is set higher, the design is unstable. This issue will be addressed when AXI 
 peripheral will be optimised.

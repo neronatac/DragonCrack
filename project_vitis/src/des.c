@@ -23,7 +23,7 @@ XStatus DESCrackerInit()
 
 	pDESCrackerConfig = DESCracker_LookupConfig(XPAR_DESCRACKER_IP_0_DEVICE_ID);
 	if (pDESCrackerConfig == NULL) return XST_FAILURE;
-	xil_printf("DelayGen base address 0x%x\n\r", pDESCrackerConfig->BaseAddress);
+	xil_printf("DESCracker base address 0x%x\n\r", pDESCrackerConfig->BaseAddress);
 
 	status = DESCracker_CfgInitialize(&DESCrackerInst, pDESCrackerConfig, pDESCrackerConfig->BaseAddress);
 	if (status != XST_SUCCESS){
