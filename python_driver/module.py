@@ -5,7 +5,7 @@ from errors import HWVersionError, DESCrackerError
 from utils import LoggingMixin
 
 # version of driver, must match with HW version
-VERSION = (0, 1)
+VERSION = (4, 0)
 
 
 class Command(Enum):
@@ -30,18 +30,19 @@ class Command(Enum):
     CMD_DES_GET_MASK = 0x1A
     CMD_DES_SET_REF = 0x1B
     CMD_DES_GET_REF = 0x1C
-    CMD_DES_SET_START_KEY = 0x1D
-    CMD_DES_GET_START_KEY = 0x1E
-    CMD_DES_SET_END_KEY = 0x1F
-    CMD_DES_GET_END_KEY = 0x20
-    CMD_DES_GET_CURRENT_KEY = 0x21
-    CMD_DES_ENDED = 0x22
-    CMD_DES_ENDED_ALL = 0x23
-    CMD_DES_RES_AVAILABLE = 0x24
-    CMD_DES_RES_AVAILABLE_ALL = 0x25
-    CMD_DES_RES_FULL = 0x26
-    CMD_DES_RES_FULL_ALL = 0x27
-    CMD_DES_GET_RESULT = 0x28
+    CMD_DES_ENDED = 0x1D
+    CMD_DES_ENDED_ALL = 0x1E
+    CMD_DES_RES_AVAILABLE = 0x1F
+    CMD_DES_RES_AVAILABLE_ALL = 0x20
+    CMD_DES_RES_FULL = 0x21
+    CMD_DES_RES_FULL_ALL = 0x22
+    CMD_DES_SET_WORKER = 0x23
+    CMD_DES_GET_WORKER = 0x24
+    CMD_DES_SET_START_KEY = 0x25
+    CMD_DES_GET_START_KEY = 0x26
+    CMD_DES_SET_END_KEY = 0x27
+    CMD_DES_GET_END_KEY = 0x28
+    CMD_DES_GET_RESULT = 0x29
 
 
 class DESCrackerModuleStatus(IntFlag):
@@ -142,6 +143,22 @@ class DESCrackerModule(LoggingMixin):
             self.logger.debug(f"Received empty response")
 
         return resp
+
+    def _set_worker(self, nbr: int):
+        """
+        Sets the current worker.
+        :param nbr: worker number
+        """
+        if not 0 <= nbr < self._workers_nbr:
+            raise ValueError(f"Worker number must be in [0,{self._workers_nbr}[ ({nbr} given)")
+        self._send_recv_cmd(Command.CMD_DES_SET_WORKER, nbr.to_bytes(4))
+
+    def _get_worker(self) -> int:
+        """
+        Gets the current worker.
+        :return: current worker number
+        """
+        return int.from_bytes(self._send_recv_cmd(Command.CMD_DES_GET_WORKER))
 
     def cmd_get_version(self) -> tuple:
         """
@@ -283,62 +300,6 @@ class DESCrackerModule(LoggingMixin):
             raise ValueError(f"Ref number must be 1 or 2 ({nbr} given)")
         return self._send_recv_cmd(Command.CMD_DES_GET_REF, nbr.to_bytes(1))
 
-    def cmd_des_set_start_key(self, key: bytes, nbr: int):
-        """
-        Sets the start key of one DES worker.
-        :param key: first key to exhaust
-        :param nbr: worker number
-        """
-        if len(key) != 7:
-            raise ValueError(f"Key must be 7 bytes long ({len(key)} given)")
-        if not 0 <= nbr < self._workers_nbr:
-            raise ValueError(f"Worker number must be in [0,{self._workers_nbr}[ ({nbr} given)")
-
-        self._send_recv_cmd(Command.CMD_DES_SET_START_KEY, nbr.to_bytes(4) + key)
-
-    def cmd_des_get_start_key(self, nbr: int) -> bytes:
-        """
-        Gets the start key of one DES worker.
-        :param nbr: worker number
-        :return: start_key parameter
-        """
-        if not 0 <= nbr < self._workers_nbr:
-            raise ValueError(f"Worker number must be in [0,{self._workers_nbr}[ ({nbr} given)")
-        return self._send_recv_cmd(Command.CMD_DES_GET_START_KEY, nbr.to_bytes(4))
-
-    def cmd_des_set_end_key(self, key: bytes, nbr: int):
-        """
-        Sets the end key of one DES worker.
-        :param key: last key to exhaust
-        :param nbr: worker number
-        """
-        if len(key) != 7:
-            raise ValueError(f"Key must be 7 bytes long ({len(key)} given)")
-        if not 0 <= nbr < self._workers_nbr:
-            raise ValueError(f"Worker number must be in [0,{self._workers_nbr}[ ({nbr} given)")
-
-        self._send_recv_cmd(Command.CMD_DES_SET_END_KEY, nbr.to_bytes(4) + key)
-
-    def cmd_des_get_end_key(self, nbr: int) -> bytes:
-        """
-        Gets the end key of one DES worker.
-        :param nbr: worker number
-        :return: end_key parameter
-        """
-        if not 0 <= nbr < self._workers_nbr:
-            raise ValueError(f"Worker number must be in [0,{self._workers_nbr}[ ({nbr} given)")
-        return self._send_recv_cmd(Command.CMD_DES_GET_END_KEY, nbr.to_bytes(4))
-
-    def cmd_des_get_current_key(self, nbr: int) -> bytes:
-        """
-        Gets the key currently tested of one DES worker.
-        :param nbr: worker number
-        :return: current key
-        """
-        if not 0 <= nbr < self._workers_nbr:
-            raise ValueError(f"Worker number must be in [0,{self._workers_nbr}[ ({nbr} given)")
-        return self._send_recv_cmd(Command.CMD_DES_GET_CURRENT_KEY, nbr.to_bytes(4))
-
     def cmd_des_ended(self, nbr: int) -> bool:
         """
         Gets the run status of one DES worker (running or finished).
@@ -392,15 +353,56 @@ class DESCrackerModule(LoggingMixin):
         """
         return int.from_bytes(self._send_recv_cmd(Command.CMD_DES_RES_FULL_ALL))
 
+    def cmd_des_set_start_key(self, key: bytes, nbr: int):
+        """
+        Sets the start key of one DES worker.
+        :param key: first key to exhaust
+        :param nbr: worker number
+        """
+        if len(key) != 7:
+            raise ValueError(f"Key must be 7 bytes long ({len(key)} given)")
+
+        self._set_worker(nbr)
+        self._send_recv_cmd(Command.CMD_DES_SET_START_KEY, key)
+
+    def cmd_des_get_start_key(self, nbr: int) -> bytes:
+        """
+        Gets the start key of one DES worker.
+        :param nbr: worker number
+        :return: start_key parameter
+        """
+        self._set_worker(nbr)
+        return self._send_recv_cmd(Command.CMD_DES_GET_START_KEY)
+
+    def cmd_des_set_end_key(self, key: bytes, nbr: int):
+        """
+        Sets the end key of one DES worker.
+        :param key: last key to exhaust
+        :param nbr: worker number
+        """
+        if len(key) != 7:
+            raise ValueError(f"Key must be 7 bytes long ({len(key)} given)")
+
+        self._set_worker(nbr)
+        self._send_recv_cmd(Command.CMD_DES_SET_END_KEY, key)
+
+    def cmd_des_get_end_key(self, nbr: int) -> bytes:
+        """
+        Gets the end key of one DES worker.
+        :param nbr: worker number
+        :return: end_key parameter
+        """
+        self._set_worker(nbr)
+        return self._send_recv_cmd(Command.CMD_DES_GET_END_KEY)
+
     def cmd_des_get_result(self, nbr: int) -> tuple[int, bytes]:
         """
         Gets one result from one DES worker.
         :param nbr: worker number
         :return: which ref matched and the key that matched
         """
-        if not 0 <= nbr < self._workers_nbr:
-            raise ValueError(f"Worker number must be in [0,{self._workers_nbr}[ ({nbr} given)")
-        resp = self._send_recv_cmd(Command.CMD_DES_GET_RESULT, nbr.to_bytes(4))
+        self._set_worker(nbr)
+        resp = self._send_recv_cmd(Command.CMD_DES_GET_RESULT)
         match_nbr = int.from_bytes(resp[:4])
         return match_nbr+1, resp[4:]
 

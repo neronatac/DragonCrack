@@ -3,24 +3,22 @@
   "ip_inst": {
     "xci_name": "main_bd_DEScracker_IP_0_2",
     "cell_name": "DEScracker_IP_0",
-    "component_reference": "xilinx.com:user:DEScracker_IP:3.0",
-    "ip_revision": "6",
+    "component_reference": "xilinx.com:user:DEScracker_IP:4.0",
+    "ip_revision": "5",
     "gen_directory": "../../../../../../DragonCrackFPGA.gen/sources_1/bd/main_bd/ip/main_bd_DEScracker_IP_0_2",
     "parameters": {
       "component_parameters": {
         "C_S00_AXI_DATA_WIDTH": [ { "value": "32", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ],
-        "C_S00_AXI_ADDR_WIDTH": [ { "value": "11", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ],
+        "C_S00_AXI_ADDR_WIDTH": [ { "value": "7", "value_src": "user", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ],
         "C_S00_AXI_BASEADDR": [ { "value": "0xFFFFFFFF", "resolve_type": "user", "format": "bitString", "enabled": false, "usage": "all" } ],
         "C_S00_AXI_HIGHADDR": [ { "value": "0x00000000", "resolve_type": "user", "format": "bitString", "enabled": false, "usage": "all" } ],
         "Component_Name": [ { "value": "main_bd_DEScracker_IP_0_2", "resolve_type": "user", "usage": "all" } ],
-        "NBR_WORKERS": [ { "value": "21", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
-        "DEBUG_SIGNALS": [ { "value": "true", "value_src": "user", "resolve_type": "user", "format": "bool", "usage": "all" } ]
+        "NBR_WORKERS": [ { "value": "29", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ]
       },
       "model_parameters": {
         "C_S00_AXI_DATA_WIDTH": [ { "value": "32", "resolve_type": "generated", "format": "long", "usage": "all" } ],
-        "C_S00_AXI_ADDR_WIDTH": [ { "value": "11", "resolve_type": "generated", "format": "long", "usage": "all" } ],
-        "NBR_WORKERS": [ { "value": "21", "resolve_type": "generated", "format": "long", "usage": "all" } ],
-        "DEBUG_SIGNALS": [ { "value": "true", "resolve_type": "generated", "format": "bool", "usage": "all" } ]
+        "C_S00_AXI_ADDR_WIDTH": [ { "value": "7", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "NBR_WORKERS": [ { "value": "29", "resolve_type": "generated", "format": "long", "usage": "all" } ]
       },
       "project_parameters": {
         "ARCHITECTURE": [ { "value": "zynq" } ],
@@ -39,7 +37,7 @@
       },
       "runtime_parameters": {
         "IPCONTEXT": [ { "value": "IP_Integrator" } ],
-        "IPREVISION": [ { "value": "6" } ],
+        "IPREVISION": [ { "value": "5" } ],
         "MANAGED": [ { "value": "TRUE" } ],
         "OUTPUTDIR": [ { "value": "../../../../../../DragonCrackFPGA.gen/sources_1/bd/main_bd/ip/main_bd_DEScracker_IP_0_2" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
@@ -51,15 +49,9 @@
     "boundary": {
       "ports": {
         "des_clk": [ { "direction": "in" } ],
-        "dbg_plaintext": [ { "direction": "out", "size_left": "63", "size_right": "0" } ],
-        "dbg_mask1": [ { "direction": "out", "size_left": "63", "size_right": "0" } ],
-        "dbg_mask2": [ { "direction": "out", "size_left": "63", "size_right": "0" } ],
-        "dbg_ref1": [ { "direction": "out", "size_left": "63", "size_right": "0" } ],
-        "dbg_ref2": [ { "direction": "out", "size_left": "63", "size_right": "0" } ],
-        "dbg_read_results": [ { "direction": "out", "size_left": "20", "size_right": "0" } ],
         "s00_axi_aclk": [ { "direction": "in" } ],
         "s00_axi_aresetn": [ { "direction": "in" } ],
-        "s00_axi_awaddr": [ { "direction": "in", "size_left": "10", "size_right": "0" } ],
+        "s00_axi_awaddr": [ { "direction": "in", "size_left": "6", "size_right": "0" } ],
         "s00_axi_awprot": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
         "s00_axi_awvalid": [ { "direction": "in" } ],
         "s00_axi_awready": [ { "direction": "out" } ],
@@ -70,7 +62,7 @@
         "s00_axi_bresp": [ { "direction": "out", "size_left": "1", "size_right": "0" } ],
         "s00_axi_bvalid": [ { "direction": "out" } ],
         "s00_axi_bready": [ { "direction": "in" } ],
-        "s00_axi_araddr": [ { "direction": "in", "size_left": "10", "size_right": "0" } ],
+        "s00_axi_araddr": [ { "direction": "in", "size_left": "6", "size_right": "0" } ],
         "s00_axi_arprot": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
         "s00_axi_arvalid": [ { "direction": "in" } ],
         "s00_axi_arready": [ { "direction": "out" } ],
@@ -87,13 +79,13 @@
           "memory_map_ref": "S00_AXI",
           "parameters": {
             "WIZ_DATA_WIDTH": [ { "value": "32", "value_src": "constant", "value_permission": "bd", "format": "long", "usage": "all" } ],
-            "WIZ_NUM_REG": [ { "value": "4", "value_src": "constant", "value_permission": "bd", "format": "long", "usage": "all" } ],
+            "WIZ_NUM_REG": [ { "value": "22", "value_src": "constant", "value_permission": "bd", "format": "long", "usage": "all" } ],
             "SUPPORTS_NARROW_BURST": [ { "value": "0", "value_src": "constant", "value_permission": "bd", "format": "long", "usage": "all" } ],
             "DATA_WIDTH": [ { "value": "32", "value_src": "auto", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "PROTOCOL": [ { "value": "AXI4LITE", "value_src": "constant", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
             "FREQ_HZ": [ { "value": "40000000", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "ID_WIDTH": [ { "value": "0", "value_src": "constant", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
-            "ADDR_WIDTH": [ { "value": "11", "value_src": "auto", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
+            "ADDR_WIDTH": [ { "value": "7", "value_src": "auto", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "AWUSER_WIDTH": [ { "value": "0", "value_src": "constant", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "ARUSER_WIDTH": [ { "value": "0", "value_src": "constant", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "WUSER_WIDTH": [ { "value": "0", "value_src": "constant", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],

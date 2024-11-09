@@ -272,12 +272,6 @@ class DESCracker(LoggingMixin):
                 for m in self._modules:
                     self.logger.info(f"Module{m.ip}: {m.cmd_get_temperature()}°C")
 
-                # current keys
-                for m in self._modules:
-                    for w in range(m.workers_nbr):
-                        self.logger.info(
-                            f"Module{m.ip}, worker {w}: current key = {m.cmd_des_get_current_key(w).hex()}")
-
         # it's done!
         elapsed = time() - begin_time
         self.logger.info(f"Benchmark {'(all_match)' if all_match else ''} on {number_of_keys:_} finished in {elapsed:.02f}s!")
@@ -319,11 +313,9 @@ class DESCracker(LoggingMixin):
                         if m.cmd_des_result_available(w):
                             break
                         elif m.cmd_des_ended(w):
-                            m.cmd_des_get_current_key(w)
-                            raise DESCrackerError(f"Module{m.ip} (worker {w}) did not get a result")
+                            raise DESCrackerError(f"Module {m.ip} (worker {w}) did not get a result")
                     else:
-                        m.cmd_des_get_current_key(w)
-                        raise DESCrackerError(f"Module{m.ip} (worker {w}) did not get a result")
+                        raise DESCrackerError(f"Module {m.ip} (worker {w}) did not get a result within 1s")
 
                     res = m.cmd_des_get_result(w)
                     if res[0] != ref_nbr:
@@ -337,8 +329,7 @@ class DESCracker(LoggingMixin):
                         if m.cmd_des_ended(w):
                             break
                     else:
-                        m.cmd_des_get_current_key(w)
-                        raise DESCrackerError(f"Module{m.ip} (worker {w}) did not resume and ended")
+                        raise DESCrackerError(f"Module {m.ip} (worker {w}) did not resume and ended")
 
                 # test 10 consecutive matches
                 self.logger.info(f"Testing consecutive matches")
@@ -357,8 +348,7 @@ class DESCracker(LoggingMixin):
                     if len(results) == 10:
                         break
                 else:
-                    m.cmd_des_get_current_key(w)
-                    raise DESCrackerError(f"Module{m.ip} (worker {w}) did not got 10 results within 1s (got {len(results)})")
+                    raise DESCrackerError(f"Module {m.ip} (worker {w}) did not got 10 results within 1s (got {len(results)})")
 
                 for i in range(10):
                     if results[i][1] != i.to_bytes(7):
@@ -395,7 +385,7 @@ if __name__ == '__main__':
     cracker.test()
 
     # do benchmarks
-    number = 10_000_000_000
+    number = 100_000_000_000
     t = cracker.benchmark(number)
     print(f"Benchmark on {number:_} done in {t} seconds")
 

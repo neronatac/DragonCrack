@@ -115,3 +115,34 @@ that the number of matches would be low, it is not a big lack of performance.
 
 AXI frequency is lowered to 40 MHz. When it is set higher, the design is unstable. This issue will be addressed when AXI 
 peripheral will be optimised.
+
+## V4 - Simplified AXI
+
+AXI is simplified so that it takes less resources. See 
+[../ip_repo/DEScracker_IP_4_0/doc/ProductGuide.md](../ip_repo/DEScracker_IP_4_0/doc/ProductGuide.md) for more details.
+The current key is not readable as it is not useful and as it is more time-consuming to read all current keys (change
+current worker in "WORKER" register and then read the key).
+
+Also, the number of workers is now limited to 32. If this limit would be reached, tests would be done to determine the 
+best strategy to instantiate more workers:
+- instantiate another IP
+- modify the IP to extend the limit to 64 workers
+
+AXI resources are divided by 4! (See resource usage below)
+
+Thanks to gained resources, 29 workers are now implemented. Their clock is still 100 MHz as DES is still the critical
+path.
+
+| Working frequency (MHz) | Number of workers | Theoretical keys/s | Worst negative slack (ns) |   LUT usage   |   FF usage    |
+|:-----------------------:|:-----------------:|:------------------:|:-------------------------:|:-------------:|:-------------:|
+|           100           |        29         |       2.9 G        |           0.703           | 93.0% (49471) | 63.6% (67711) |
+
+Notes on resources usage (after implementation) of IP:
+
+| Block  |    Number of LUTs     | Number of FlipFlops |
+|:------:|:---------------------:|:-------------------:|
+| Total  |         48794         |        66813        |
+|  AXI   |         1669          |        3738         |
+| worker | between 1616 and 1729 |        2175         |
+
+In this configuration, each worker is implemented using a different number of LUTs.

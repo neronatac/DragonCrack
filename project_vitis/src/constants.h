@@ -31,17 +31,18 @@
 #define CMD_DES_GET_MASK            0x1A
 #define CMD_DES_SET_REF             0x1B
 #define CMD_DES_GET_REF             0x1C
-#define CMD_DES_SET_START_KEY       0x1D
-#define CMD_DES_GET_START_KEY       0x1E
-#define CMD_DES_SET_END_KEY         0x1F
-#define CMD_DES_GET_END_KEY         0x20
-#define CMD_DES_GET_CURRENT_KEY     0x21
-#define CMD_DES_ENDED               0x22
-#define CMD_DES_ENDED_ALL           0x23
-#define CMD_DES_RES_AVAILABLE       0x24
-#define CMD_DES_RES_AVAILABLE_ALL   0x25
-#define CMD_DES_RES_FULL            0x26
-#define CMD_DES_RES_FULL_ALL        0x27
-#define CMD_DES_GET_RESULT          0x28
+#define CMD_DES_ENDED               0x1D
+#define CMD_DES_ENDED_ALL           0x1E
+#define CMD_DES_RES_AVAILABLE       0x1F
+#define CMD_DES_RES_AVAILABLE_ALL   0x20
+#define CMD_DES_RES_FULL            0x21
+#define CMD_DES_RES_FULL_ALL        0x22
+#define CMD_DES_SET_WORKER          0x23
+#define CMD_DES_GET_WORKER          0x24
+#define CMD_DES_SET_START_KEY       0x25
+#define CMD_DES_GET_START_KEY       0x26
+#define CMD_DES_SET_END_KEY         0x27
+#define CMD_DES_GET_END_KEY         0x28
+#define CMD_DES_GET_RESULT          0x29
 
 #endif /* SRC_CONSTANTS_H_ */

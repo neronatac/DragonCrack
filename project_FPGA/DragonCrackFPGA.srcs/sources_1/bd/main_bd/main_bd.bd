@@ -2210,16 +2210,13 @@
         }
       },
       "DEScracker_IP_0": {
-        "vlnv": "xilinx.com:user:DEScracker_IP:3.0",
+        "vlnv": "xilinx.com:user:DEScracker_IP:4.0",
         "xci_name": "main_bd_DEScracker_IP_0_2",
         "xci_path": "ip\\main_bd_DEScracker_IP_0_2\\main_bd_DEScracker_IP_0_2.xci",
         "inst_hier_path": "DEScracker_IP_0",
         "parameters": {
-          "DEBUG_SIGNALS": {
-            "value": "true"
-          },
           "NBR_WORKERS": {
-            "value": "21"
+            "value": "29"
           }
         }
       }

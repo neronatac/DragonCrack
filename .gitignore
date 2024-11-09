@@ -2,6 +2,7 @@
 project_FPGA/*
 !project_FPGA/DragonCrackFPGA.xpr
 !project_FPGA/DragonCrackFPGA.srcs
+*.dcp
 
 # IP repository
 ip_repo/edit*

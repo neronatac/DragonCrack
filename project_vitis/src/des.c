@@ -41,7 +41,7 @@ void process_des(u8 cmd, u8 len, u8* data)
 	switch (cmd)
 	{
 	case CMD_DES_GET_VERSION:
-		int major, minor;
+		unsigned int major, minor;
 		DESCracker_GetVersion(&DESCrackerInst, &major, &minor);
 		add_int_to_response(major);
 		add_int_to_response(minor);
@@ -94,30 +94,6 @@ void process_des(u8 cmd, u8 len, u8* data)
 		add_u64_to_response(DESCracker_GetRef(&DESCrackerInst, (int)data[0]));
 		break;
 
-	case CMD_DES_SET_START_KEY:
-		u32 start_key_nbr = u32_from_buffer(data);
-		u64 start_key = u56_from_buffer(data+4);
-		DESCracker_SetStartKey(&DESCrackerInst, start_key_nbr, start_key);
-		break;
-
-	case CMD_DES_GET_START_KEY:
-		add_u56_to_response(DESCracker_GetStartKey(&DESCrackerInst, u32_from_buffer(data)));
-		break;
-
-	case CMD_DES_SET_END_KEY:
-		u32 end_key_nbr = u32_from_buffer(data);
-		u64 end_key = u56_from_buffer(data+4);
-		DESCracker_SetEndKey(&DESCrackerInst, end_key_nbr, end_key);
-		break;
-
-	case CMD_DES_GET_END_KEY:
-		add_u56_to_response(DESCracker_GetEndKey(&DESCrackerInst, u32_from_buffer(data)));
-		break;
-
-	case CMD_DES_GET_CURRENT_KEY:
-		add_u56_to_response(DESCracker_GetCurrentKey(&DESCrackerInst, u32_from_buffer(data)));
-		break;
-
 	case CMD_DES_ENDED:
 		add_int_to_response(DESCracker_Ended(&DESCrackerInst, u32_from_buffer(data)));
 		break;
@@ -142,10 +118,36 @@ void process_des(u8 cmd, u8 len, u8* data)
 		add_u64_to_response(DESCracker_ResultFullAll(&DESCrackerInst));
 		break;
 
+	case CMD_DES_SET_WORKER:
+		DESCracker_SetWorker(&DESCrackerInst, u32_from_buffer(data));
+		break;
+
+	case CMD_DES_GET_WORKER:
+		add_u32_to_response(DESCracker_GetWorker(&DESCrackerInst));
+		break;
+
+	case CMD_DES_SET_START_KEY:
+		u64 start_key = u56_from_buffer(data);
+		DESCracker_SetStartKey(&DESCrackerInst, start_key);
+		break;
+
+	case CMD_DES_GET_START_KEY:
+		add_u56_to_response(DESCracker_GetStartKey(&DESCrackerInst));
+		break;
+
+	case CMD_DES_SET_END_KEY:
+		u64 end_key = u56_from_buffer(data);
+		DESCracker_SetEndKey(&DESCrackerInst, end_key);
+		break;
+
+	case CMD_DES_GET_END_KEY:
+		add_u56_to_response(DESCracker_GetEndKey(&DESCrackerInst));
+		break;
+
 	case CMD_DES_GET_RESULT:
 		u64 result;
-		int match_nbr;
-		DESCracker_GetResult(&DESCrackerInst, u32_from_buffer(data), &match_nbr, &result);
+		unsigned int match_nbr;
+		DESCracker_GetResult(&DESCrackerInst, &match_nbr, &result);
 		add_int_to_response(match_nbr);
 		add_u56_to_response(result);
 		break;
