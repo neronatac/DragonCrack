@@ -3,7 +3,7 @@
   "ip_inst": {
     "xci_name": "main_bd_DEScracker_IP_0_2",
     "cell_name": "DEScracker_IP_0",
-    "component_reference": "xilinx.com:user:DEScracker_IP:4.0",
+    "component_reference": "xilinx.com:user:DEScracker_IP:5.0",
     "ip_revision": "5",
     "gen_directory": "../../../../../../DragonCrackFPGA.gen/sources_1/bd/main_bd/ip/main_bd_DEScracker_IP_0_2",
     "parameters": {
@@ -13,12 +13,14 @@
         "C_S00_AXI_BASEADDR": [ { "value": "0xFFFFFFFF", "resolve_type": "user", "format": "bitString", "enabled": false, "usage": "all" } ],
         "C_S00_AXI_HIGHADDR": [ { "value": "0x00000000", "resolve_type": "user", "format": "bitString", "enabled": false, "usage": "all" } ],
         "Component_Name": [ { "value": "main_bd_DEScracker_IP_0_2", "resolve_type": "user", "usage": "all" } ],
-        "NBR_WORKERS": [ { "value": "29", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ]
+        "NBR_WORKERS": [ { "value": "29", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "VARIABLE_PART_WIDTH": [ { "value": "32", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ]
       },
       "model_parameters": {
         "C_S00_AXI_DATA_WIDTH": [ { "value": "32", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_S00_AXI_ADDR_WIDTH": [ { "value": "7", "resolve_type": "generated", "format": "long", "usage": "all" } ],
-        "NBR_WORKERS": [ { "value": "29", "resolve_type": "generated", "format": "long", "usage": "all" } ]
+        "NBR_WORKERS": [ { "value": "29", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "VARIABLE_PART_WIDTH": [ { "value": "32", "resolve_type": "generated", "format": "long", "usage": "all" } ]
       },
       "project_parameters": {
         "ARCHITECTURE": [ { "value": "zynq" } ],
@@ -169,7 +171,7 @@
           "abstraction_type": "xilinx.com:signal:clock_rtl:1.0",
           "mode": "slave",
           "parameters": {
-            "FREQ_HZ": [ { "value": "99999999", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
+            "FREQ_HZ": [ { "value": "199999998", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "FREQ_TOLERANCE_HZ": [ { "value": "0", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "PHASE": [ { "value": "0.0", "value_permission": "bd", "resolve_type": "generated", "format": "float", "is_ips_inferred": true, "is_static_object": false } ],
             "CLK_DOMAIN": [ { "value": "main_bd_processing_system7_0_1_FCLK_CLK1", "value_src": "default_prop", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],

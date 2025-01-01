@@ -63,6 +63,7 @@ When no match is found:
 |   V2    |  859_516_952  |    2y 240d 7h 29m 48s     |         156 %         |
 |   V3    | 2_014_867_336 |     1y 48d 22h 9m 7s      |         234 %         |
 |   V4    | 2_859_176_973 |     291d 16h 36m 55s      |         142 %         |
+|   V5    | 4_588_143_844 |     181d 18h 32m 53s      |         160 %         |
 
 ### V0 - Proof of concept
 A single DES worker is implemented, using a very slow clock. Implementation is as naive as possible (even dumb on 
@@ -79,6 +80,9 @@ Still 21 workers, but working with a separated clock at 100 MHz.
 
 ### V4 - Optimised AXI design
 AXI part of DES IP is optimised, using less resources. 29 workers are implemented now, still at 100 MHz.
+
+### V5 - Fix part of the key
+A part of the key is constant and exhaust is done on variable part from 0x00... to 0xFF...
 
 
 ## Requirements

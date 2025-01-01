@@ -1,4 +1,4 @@
-from enum import Enum, IntFlag
+from enum import Enum
 from socket import socket, AF_INET, SOCK_STREAM
 
 from errors import HWVersionError, DESCrackerError
@@ -20,34 +20,25 @@ class Command(Enum):
     CMD_DES_BASE = 0x10
     CMD_DES_GET_VERSION = 0x11
     CMD_DES_GET_PARAMS = 0x12
-    CMD_DES_GET_STATUS = 0x13
+    CMD_DES_GET_RESETS = 0x13
     CMD_DES_RESET = 0x14
-    CMD_DES_ENABLE = 0x15
-    CMD_DES_DISABLE = 0x16
-    CMD_DES_SET_PLAINTEXT = 0x17
-    CMD_DES_GET_PLAINTEXT = 0x18
-    CMD_DES_SET_MASK = 0x19
-    CMD_DES_GET_MASK = 0x1A
-    CMD_DES_SET_REF = 0x1B
-    CMD_DES_GET_REF = 0x1C
-    CMD_DES_ENDED = 0x1D
-    CMD_DES_ENDED_ALL = 0x1E
-    CMD_DES_RES_AVAILABLE = 0x1F
-    CMD_DES_RES_AVAILABLE_ALL = 0x20
-    CMD_DES_RES_FULL = 0x21
-    CMD_DES_RES_FULL_ALL = 0x22
-    CMD_DES_SET_WORKER = 0x23
-    CMD_DES_GET_WORKER = 0x24
-    CMD_DES_SET_START_KEY = 0x25
-    CMD_DES_GET_START_KEY = 0x26
-    CMD_DES_SET_END_KEY = 0x27
-    CMD_DES_GET_END_KEY = 0x28
-    CMD_DES_GET_RESULT = 0x29
-
-
-class DESCrackerModuleStatus(IntFlag):
-    RESET = 1
-    ENABLE = 2
+    CMD_DES_SET_PLAINTEXT = 0x15
+    CMD_DES_GET_PLAINTEXT = 0x16
+    CMD_DES_SET_MASK = 0x17
+    CMD_DES_GET_MASK = 0x18
+    CMD_DES_SET_REF = 0x19
+    CMD_DES_GET_REF = 0x1A
+    CMD_DES_ENDED = 0x1B
+    CMD_DES_ENDED_ALL = 0x1C
+    CMD_DES_RES_AVAILABLE = 0x1D
+    CMD_DES_RES_AVAILABLE_ALL = 0x1E
+    CMD_DES_RES_FULL = 0x1F
+    CMD_DES_RES_FULL_ALL = 0x20
+    CMD_DES_SET_WORKER = 0x21
+    CMD_DES_GET_WORKER = 0x22
+    CMD_DES_SET_FIXED_KEY = 0x23
+    CMD_DES_GET_FIXED_KEY = 0x24
+    CMD_DES_GET_RESULT = 0x25
 
 
 class DESCrackerModule(LoggingMixin):
@@ -68,6 +59,8 @@ class DESCrackerModule(LoggingMixin):
         self._temp_max: int = -1
         # number of workers in HW
         self._workers_nbr: int = -1
+        # variable part width of the key
+        self._variable_part_width: int = -1
 
         self._ip = ip
         self.conn = socket(AF_INET, SOCK_STREAM)
@@ -108,7 +101,6 @@ class DESCrackerModule(LoggingMixin):
         Disables the HW and closes connection.
         :return:
         """
-        self.cmd_des_disable()
         self.conn.close()
 
     # ######################################################################
@@ -207,35 +199,27 @@ class DESCrackerModule(LoggingMixin):
         """
         resp = self._send_recv_cmd(Command.CMD_DES_GET_PARAMS)
         nbr = int.from_bytes(resp[:4])
+        variable_part_with = int.from_bytes(resp[4:8])
         self._workers_nbr = nbr
-        return {'workers_nbr': nbr}
+        self._variable_part_width = variable_part_with
+        return {'workers_nbr': nbr, 'variable_part_with': variable_part_with}
 
-    def cmd_des_get_status(self) -> DESCrackerModuleStatus:
+    def cmd_des_get_resets(self) -> int:
         """
-        Gets current status of DES IP (enable, reset, etc.).
-        :return: status as flag int
+        Gets the reset status of workers.
+        :return: status as bit field
         """
-        resp = self._send_recv_cmd(Command.CMD_DES_GET_STATUS)
-        return DESCrackerModuleStatus(resp[0])
+        return int.from_bytes(self._send_recv_cmd(Command.CMD_DES_GET_RESETS))
 
-    def cmd_des_reset(self):
+    def cmd_des_reset(self, workers: int):
         """
-        Resets the DES IP.
+        Resets some workers.
         Must be done after setting parameters.
+        :param workers: workers to reset (each bit is one of them)
         """
-        self._send_recv_cmd(Command.CMD_DES_RESET)
-
-    def cmd_des_enable(self):
-        """
-        Enables the DES IP.
-        """
-        self._send_recv_cmd(Command.CMD_DES_ENABLE)
-
-    def cmd_des_disable(self):
-        """
-        Disables the DES IP.
-        """
-        self._send_recv_cmd(Command.CMD_DES_DISABLE)
+        if not 0 <= workers < 1 << self._workers_nbr:
+            raise ValueError(f"Workers parameter must be positive and have less bits than the number of workers")
+        self._send_recv_cmd(Command.CMD_DES_RESET, workers.to_bytes(4))
 
     def cmd_des_set_plaintext(self, plaintext: bytes):
         """
@@ -353,47 +337,27 @@ class DESCrackerModule(LoggingMixin):
         """
         return int.from_bytes(self._send_recv_cmd(Command.CMD_DES_RES_FULL_ALL))
 
-    def cmd_des_set_start_key(self, key: bytes, nbr: int):
+    def cmd_des_set_fixed_key(self, key: bytes, nbr: int):
         """
-        Sets the start key of one DES worker.
-        :param key: first key to exhaust
-        :param nbr: worker number
-        """
-        if len(key) != 7:
-            raise ValueError(f"Key must be 7 bytes long ({len(key)} given)")
-
-        self._set_worker(nbr)
-        self._send_recv_cmd(Command.CMD_DES_SET_START_KEY, key)
-
-    def cmd_des_get_start_key(self, nbr: int) -> bytes:
-        """
-        Gets the start key of one DES worker.
-        :param nbr: worker number
-        :return: start_key parameter
-        """
-        self._set_worker(nbr)
-        return self._send_recv_cmd(Command.CMD_DES_GET_START_KEY)
-
-    def cmd_des_set_end_key(self, key: bytes, nbr: int):
-        """
-        Sets the end key of one DES worker.
+        Sets the fixed part of the key of one DES worker.
         :param key: last key to exhaust
         :param nbr: worker number
         """
-        if len(key) != 7:
-            raise ValueError(f"Key must be 7 bytes long ({len(key)} given)")
+        if int.from_bytes(key).bit_length() > self.fixed_part_width:
+            raise ValueError(f"Fixed part of the key must be {self.fixed_part_width} bits long "
+                             f"({int.from_bytes(key).bit_length()} given)")
 
         self._set_worker(nbr)
-        self._send_recv_cmd(Command.CMD_DES_SET_END_KEY, key)
+        self._send_recv_cmd(Command.CMD_DES_SET_FIXED_KEY, b'\x00' * (4 - len(key)) + key)  # zero padding (to 32 bits)
 
-    def cmd_des_get_end_key(self, nbr: int) -> bytes:
+    def cmd_des_get_fixed_key(self, nbr: int) -> bytes:
         """
-        Gets the end key of one DES worker.
+        Gets the fixed part of the key of one DES worker.
         :param nbr: worker number
         :return: end_key parameter
         """
         self._set_worker(nbr)
-        return self._send_recv_cmd(Command.CMD_DES_GET_END_KEY)
+        return self._send_recv_cmd(Command.CMD_DES_GET_FIXED_KEY)
 
     def cmd_des_get_result(self, nbr: int) -> tuple[int, bytes]:
         """
@@ -420,3 +384,11 @@ class DESCrackerModule(LoggingMixin):
     @property
     def workers_nbr(self) -> int:
         return self._workers_nbr
+
+    @property
+    def variable_part_width(self) -> int:
+        return self._variable_part_width
+
+    @property
+    def fixed_part_width(self) -> int:
+        return 56 - self._variable_part_width

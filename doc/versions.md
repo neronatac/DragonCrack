@@ -146,3 +146,36 @@ Notes on resources usage (after implementation) of IP:
 | worker | between 1616 and 1729 |        2175         |
 
 In this configuration, each worker is implemented using a different number of LUTs.
+
+## V5 - Fix part of the key
+
+Key is now split in 2 parts:
+- fixed part (MSBs) which is constant
+- variable part (LSBs) which is exhausted
+
+The user sets the fixed bits of the key and then launches the exhaust. It is done on variable bits only, from 0x00... to
+0xFF...
+
+The variable part is here set to 32 bits. Driver has been modified to be able to work with chunks of 2^32 elements. By 
+doing this, the counter that increments key to be tested is smaller. Used resources are then reduced and design can be 
+faster. Clock is now at 200 MHz. 29 workers are implemented. A 30th could be added but clock could not reach 200 MHz.
+
+Finally, configuration is:
+
+| Working frequency (MHz) | Number of workers | Theoretical keys/s | Worst negative slack (ns) |   LUT usage   |   FF usage    |
+|:-----------------------:|:-----------------:|:------------------:|:-------------------------:|:-------------:|:-------------:|
+|           200           |        29         |       5.8 G        |           0.001           | 89.8% (47774) | 50.1% (53277) |
+
+Note the difference between theoretical throughput and real one (see [README.md](../README.md)). It is due to the fact
+that workers have to be handled one by one and it is done using Python, through Ethernet and C driver. 
+
+Notes on resources usage (after implementation) of IP:
+
+| Block  |    Number of LUTs     | Number of FlipFlops |
+|:------:|:---------------------:|:-------------------:|
+| Total  |         47774         |        53277        |
+|  AXI   |          475          |        1165         |
+| worker | between 1583 and 1700 |        1766         |
+
+In this configuration, each worker is implemented using a different number of LUTs. As AXI did not change a lot, the 
+difference of resources usage against V4 is unexplained.

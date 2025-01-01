@@ -49,22 +49,15 @@ void process_des(u8 cmd, u8 len, u8* data)
 
 	case CMD_DES_GET_PARAMS:
 		add_int_to_response(DESCrackerInst.WorkersNumber);
+		add_int_to_response(DESCrackerInst.VariablePartWidth);
 		break;
 
-	case CMD_DES_GET_STATUS:
-		add_u32_to_response(DESCracker_GetStatus(&DESCrackerInst));
+	case CMD_DES_GET_RESETS:
+		add_u32_to_response(DESCracker_GetResets(&DESCrackerInst));
 		break;
 
 	case CMD_DES_RESET:
-		DESCracker_Reset(&DESCrackerInst);
-		break;
-
-	case CMD_DES_ENABLE:
-		DESCracker_Enable(&DESCrackerInst);
-		break;
-
-	case CMD_DES_DISABLE:
-		DESCracker_Disable(&DESCrackerInst);
+		DESCracker_Reset(&DESCrackerInst, u32_from_buffer(data));
 		break;
 
 	case CMD_DES_SET_PLAINTEXT:
@@ -126,22 +119,13 @@ void process_des(u8 cmd, u8 len, u8* data)
 		add_u32_to_response(DESCracker_GetWorker(&DESCrackerInst));
 		break;
 
-	case CMD_DES_SET_START_KEY:
-		u64 start_key = u56_from_buffer(data);
-		DESCracker_SetStartKey(&DESCrackerInst, start_key);
+	case CMD_DES_SET_FIXED_KEY:
+		u32 key = u32_from_buffer(data);
+		DESCracker_SetFixedKey(&DESCrackerInst, key);
 		break;
 
-	case CMD_DES_GET_START_KEY:
-		add_u56_to_response(DESCracker_GetStartKey(&DESCrackerInst));
-		break;
-
-	case CMD_DES_SET_END_KEY:
-		u64 end_key = u56_from_buffer(data);
-		DESCracker_SetEndKey(&DESCrackerInst, end_key);
-		break;
-
-	case CMD_DES_GET_END_KEY:
-		add_u56_to_response(DESCracker_GetEndKey(&DESCrackerInst));
+	case CMD_DES_GET_FIXED_KEY:
+		add_u32_to_response(DESCracker_GetFixedKey(&DESCrackerInst));
 		break;
 
 	case CMD_DES_GET_RESULT:

@@ -682,7 +682,7 @@
             "value": "40.000000"
           },
           "PCW_ACT_FPGA1_PERIPHERAL_FREQMHZ": {
-            "value": "99.999999"
+            "value": "199.999998"
           },
           "PCW_ACT_FPGA2_PERIPHERAL_FREQMHZ": {
             "value": "10.000000"
@@ -781,7 +781,7 @@
             "value": "40000000"
           },
           "PCW_CLK1_FREQ": {
-            "value": "99999999"
+            "value": "199999998"
           },
           "PCW_CLK2_FREQ": {
             "value": "10000000"
@@ -1093,7 +1093,7 @@
             "value": "5"
           },
           "PCW_FCLK1_PERIPHERAL_DIVISOR1": {
-            "value": "2"
+            "value": "1"
           },
           "PCW_FCLK2_PERIPHERAL_CLKSRC": {
             "value": "IO PLL"
@@ -2210,13 +2210,16 @@
         }
       },
       "DEScracker_IP_0": {
-        "vlnv": "xilinx.com:user:DEScracker_IP:4.0",
+        "vlnv": "xilinx.com:user:DEScracker_IP:5.0",
         "xci_name": "main_bd_DEScracker_IP_0_2",
         "xci_path": "ip\\main_bd_DEScracker_IP_0_2\\main_bd_DEScracker_IP_0_2.xci",
         "inst_hier_path": "DEScracker_IP_0",
         "parameters": {
           "NBR_WORKERS": {
             "value": "29"
+          },
+          "VARIABLE_PART_WIDTH": {
+            "value": "32"
           }
         }
       }

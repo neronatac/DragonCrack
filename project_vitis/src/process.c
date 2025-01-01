@@ -76,7 +76,7 @@ void process_general(u8 cmd, u8 len, u8* data)
 	switch (cmd)
 	{
 	case CMD_GET_VERSION:
-		add_int_to_response(4);  // major
+		add_int_to_response(5);  // major
 		add_int_to_response(0);  // minor
 
 	case CMD_ECHO:
