@@ -166,8 +166,8 @@ Finally, configuration is:
 |:-----------------------:|:-----------------:|:------------------:|:-------------------------:|:-------------:|:-------------:|
 |           200           |        29         |       5.8 G        |           0.001           | 89.8% (47774) | 50.1% (53277) |
 
-Note the difference between theoretical throughput and real one (see [README.md](../README.md)). It is due to the fact
-that workers have to be handled one by one and it is done using Python, through Ethernet and C driver. 
+Note the difference between theoretical throughput and real one (see [README.md](../README.md)). It is probably due to 
+the fact that workers have to be handled one by one and it is done using Python, through Ethernet and C driver. 
 
 Notes on resources usage (after implementation) of IP:
 
@@ -179,3 +179,10 @@ Notes on resources usage (after implementation) of IP:
 
 In this configuration, each worker is implemented using a different number of LUTs. As AXI did not change a lot, the 
 difference of resources usage against V4 is unexplained.
+
+### V5.1 - Handling of workers done in module
+
+The C and Python drivers have been modified so that handling of the exhaust is now done directly in CPU, by the C 
+driver.
+
+The difference in performance is 1%, which does not explain the difference between theoretical throughput and real one.

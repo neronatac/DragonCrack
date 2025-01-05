@@ -145,17 +145,17 @@ void DESCracker_SetMask(DESCracker *InstancePtr, unsigned int number, u64 mask)
 {
 	Xil_AssertVoid(InstancePtr != NULL);
 	Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-    Xil_AssertVoid(number == 1 || number == 2);
+    Xil_AssertVoid(number == 0 || number == 1);
 
     u32 high = (mask >> 32) & 0xFFFFFFFF;
     u32 low = mask & 0xFFFFFFFF;
 
-    if (number == 1) {
+    if (number == 0) {
+        DESCRACKER_IP_mWriteReg(InstancePtr->BaseAddress, DESCRACKER_IP_MASK0_HIGH_OFFSET, high);
+        DESCRACKER_IP_mWriteReg(InstancePtr->BaseAddress, DESCRACKER_IP_MASK0_LOW_OFFSET, low);
+    } else {
         DESCRACKER_IP_mWriteReg(InstancePtr->BaseAddress, DESCRACKER_IP_MASK1_HIGH_OFFSET, high);
         DESCRACKER_IP_mWriteReg(InstancePtr->BaseAddress, DESCRACKER_IP_MASK1_LOW_OFFSET, low);
-    } else {
-        DESCRACKER_IP_mWriteReg(InstancePtr->BaseAddress, DESCRACKER_IP_MASK2_HIGH_OFFSET, high);
-        DESCRACKER_IP_mWriteReg(InstancePtr->BaseAddress, DESCRACKER_IP_MASK2_LOW_OFFSET, low);
     }
 }
 
@@ -168,17 +168,17 @@ u64 DESCracker_GetMask(DESCracker *InstancePtr, unsigned int number)
 {
 	Xil_AssertNonvoid(InstancePtr != NULL);
 	Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-    Xil_AssertNonvoid(number == 1 || number == 2);
+    Xil_AssertNonvoid(number == 0 || number == 1);
 
     u32 high = 0;
     u32 low = 0;
 
-    if (number == 1) {
+    if (number == 0) {
+        high = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_MASK0_HIGH_OFFSET);
+        low = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_MASK0_LOW_OFFSET);
+    } else {
         high = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_MASK1_HIGH_OFFSET);
         low = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_MASK1_LOW_OFFSET);
-    } else {
-        high = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_MASK2_HIGH_OFFSET);
-        low = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_MASK2_LOW_OFFSET);
     }
 
     return ((u64)high << 32) | low;
@@ -194,17 +194,17 @@ void DESCracker_SetRef(DESCracker *InstancePtr, unsigned int number, u64 ref)
 {
 	Xil_AssertVoid(InstancePtr != NULL);
 	Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-    Xil_AssertVoid(number == 1 || number == 2);
+    Xil_AssertVoid(number == 0 || number == 1);
 
     u32 high = (ref >> 32) & 0xFFFFFFFF;
     u32 low = ref & 0xFFFFFFFF;
 
-    if (number == 1) {
+    if (number == 0) {
+        DESCRACKER_IP_mWriteReg(InstancePtr->BaseAddress, DESCRACKER_IP_REF0_HIGH_OFFSET, high);
+        DESCRACKER_IP_mWriteReg(InstancePtr->BaseAddress, DESCRACKER_IP_REF0_LOW_OFFSET, low);
+    } else {
         DESCRACKER_IP_mWriteReg(InstancePtr->BaseAddress, DESCRACKER_IP_REF1_HIGH_OFFSET, high);
         DESCRACKER_IP_mWriteReg(InstancePtr->BaseAddress, DESCRACKER_IP_REF1_LOW_OFFSET, low);
-    } else {
-        DESCRACKER_IP_mWriteReg(InstancePtr->BaseAddress, DESCRACKER_IP_REF2_HIGH_OFFSET, high);
-        DESCRACKER_IP_mWriteReg(InstancePtr->BaseAddress, DESCRACKER_IP_REF2_LOW_OFFSET, low);
     }
 }
 
@@ -217,17 +217,17 @@ u64 DESCracker_GetRef(DESCracker *InstancePtr, unsigned int number)
 {
 	Xil_AssertNonvoid(InstancePtr != NULL);
 	Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-    Xil_AssertNonvoid(number == 1 || number == 2);
+    Xil_AssertNonvoid(number == 0 || number == 1);
 
     u32 high = 0;
     u32 low = 0;
 
-    if (number == 1) {
+    if (number == 0) {
+        high = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_REF0_HIGH_OFFSET);
+        low = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_REF0_LOW_OFFSET);
+    } else {
         high = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_REF1_HIGH_OFFSET);
         low = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_REF1_LOW_OFFSET);
-    } else {
-        high = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_REF2_HIGH_OFFSET);
-        low = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_REF2_LOW_OFFSET);
     }
 
     return ((u64)high << 32) | low;
@@ -386,5 +386,21 @@ void DESCracker_GetResult(DESCracker *InstancePtr, unsigned int *match_nbr, u64 
     u32 key_high = high & 0xFFFFFF;
 
     *key = ((u64)key_high << 32) | low;
-    *match_nbr = high >> 31;
+    *match_nbr = high >> 24;
+}
+
+/**
+ * Same functionality as DESCracker_GetResult but returns raw registers as u64
+ * @param InstancePtr: DESCracker instance to work on
+ */
+u64 DESCracker_GetResultRaw(DESCracker *InstancePtr)
+{
+    Xil_AssertVoid(InstancePtr != NULL);
+	Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    // read high first! (because of a problem in AXI)
+    u32 high = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_MATCHOUT_HIGH_OFFSET);
+    u32 low = DESCRACKER_IP_mReadReg(InstancePtr->BaseAddress, DESCRACKER_IP_MATCHOUT_LOW_OFFSET);
+
+    return ((u64)high << 32) | low;
 }

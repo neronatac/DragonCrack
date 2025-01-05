@@ -12,10 +12,10 @@
 #include "platform.h"
 #include "netif/xadapter.h"
 #include "process.h"
+#include "des.h"
 
 /* missing declaration in lwIP */
 void lwip_init();
-err_t tcp_send_empty_ack(struct tcp_pcb *pcb);
 
 void tcp_fasttmr(void);
 void tcp_slowtmr(void);
@@ -193,17 +193,6 @@ void ethernet_mainloop()
 			TcpSlowTmrFlag = 0;
 		}
 		xemacif_input(p_server_netif);
-		transfer_data();
+		handle_exhaust();
 	}
-}
-
-
-/**
- * Copied as-is from example.
- * Don't know its role.
- * @return
- */
-int transfer_data()
-{
-	return 0;
 }

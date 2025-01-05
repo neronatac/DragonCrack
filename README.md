@@ -64,6 +64,7 @@ When no match is found:
 |   V3    | 2_014_867_336 |     1y 48d 22h 9m 7s      |         234 %         |
 |   V4    | 2_859_176_973 |     291d 16h 36m 55s      |         142 %         |
 |   V5    | 4_644_101_381 |     179d 13h 58m 59s      |         162 %         |
+|  V5.1   | 4_695_269_025 |      177d 15h 0m 50s      |         101 %         |
 
 ### V0 - Proof of concept
 A single DES worker is implemented, using a very slow clock. Implementation is as naive as possible (even dumb on 
@@ -83,6 +84,9 @@ AXI part of DES IP is optimised, using less resources. 29 workers are implemente
 
 ### V5 - Fix part of the key
 A part of the key is constant and exhaust is done on variable part from 0x00... to 0xFF...
+
+### V5.1 - Handling of workers done in module
+Handling of workers, retrieving of results, chunks generation, etc. is now done directly in the module, by the C driver.
 
 
 ## Requirements

@@ -1,10 +1,9 @@
 import logging
-import math
 from dataclasses import dataclass
 from time import time
 
 from errors import DESCrackerError, DESCrackerTimeoutError
-from module import DESCrackerModule
+from module import DESCrackerModule, DESStatus
 from utils import LoggingMixin, pretty_str_seconds
 
 
@@ -65,24 +64,24 @@ class DESCracker(LoggingMixin):
     # ######################################################################
     def exhaust_keys(self,
                      plaintext: bytes,
-                     ref1: bytes,
-                     mask1: bytes,
+                     ref0: bytes,
+                     mask0: bytes,
                      start: bytes | None = None,
                      end: bytes | None = None,
-                     ref2: bytes | None = None,
-                     mask2: bytes | None = None,
+                     ref1: bytes | None = None,
+                     mask1: bytes | None = None,
                      single_worker_module: DESCrackerModule | None = None,
                      single_worker_idx: int | None = None,
                      timeout: float | None = None) -> tuple[list[Result], int, int]:
         """
-        Exhaust keys on all workers (blocking until it finishes or it timeouts) and return matches.
+        Exhausts keys on all workers (blocking until it finishes or it timeouts) and return matches.
         :param plaintext: plaintext to use
-        :param ref1: first reference to check
-        :param mask1: first mask to apply
+        :param ref0: first reference to check
+        :param mask0: first mask to apply
         :param start: first key to exhaust (all 0x00 if None)
         :param end: last key to exhaust (all 0xFF if None)
-        :param ref2: second reference to check
-        :param mask2: second mask to apply
+        :param ref1: second reference to check
+        :param mask1: second mask to apply
         :param single_worker_module: if defined, does the exhaust only on the first worker of this module
         :param single_worker_idx: index of the worker to work with in module given in previous parameter
         :param timeout: time in seconds at which it raises a DESCrackerTimeoutError (results are in it)
@@ -91,14 +90,14 @@ class DESCracker(LoggingMixin):
         # param checks
         if len(plaintext) != 8:
             raise ValueError(f"DES plaintext must be 8 bytes long ({len(plaintext)} given)")
-        if len(ref1) != 8:
+        if len(ref0) != 8:
+            raise ValueError(f"Ref must be 8 bytes long ({len(ref0)} given)")
+        if ref1 is not None and len(ref1) != 8:
             raise ValueError(f"Ref must be 8 bytes long ({len(ref1)} given)")
-        if ref2 is not None and len(ref2) != 8:
-            raise ValueError(f"Ref must be 8 bytes long ({len(ref2)} given)")
-        if len(mask1) != 8:
+        if len(mask0) != 8:
+            raise ValueError(f"Mask must be 8 bytes long ({len(mask0)} given)")
+        if mask1 is not None and len(mask1) != 8:
             raise ValueError(f"Mask must be 8 bytes long ({len(mask1)} given)")
-        if mask2 is not None and len(mask2) != 8:
-            raise ValueError(f"Mask must be 8 bytes long ({len(mask2)} given)")
         if start is not None and len(start) != 7:
             raise ValueError(f"Key must be 7 bytes long ({len(start)} given)")
         if end is not None and len(end) != 7:
@@ -112,10 +111,11 @@ class DESCracker(LoggingMixin):
         # optional params handling
         start = start or bytes(7)
         end = end or bytes([0xFF] * 7)
-        ref2 = ref2 or bytes([0xFF] * 8)
-        mask2 = mask2 or bytes(8)
+        ref1 = ref1 or bytes([0xFF] * 8)
+        mask1 = mask1 or bytes(8)
 
         # timer for timeout
+        exit_timeout = False
         begin_time = time()
 
         # compute total number of workers
@@ -135,40 +135,36 @@ class DESCracker(LoggingMixin):
             f"to 0x{real_end_key.to_bytes(7).hex(' ', 4)}")
         self.logger.info(f"{end_fixed - start_fixed + 1} chunks of {self._modules[0].variable_part_width} bits each")
 
-        # reset modules to clean them then set plaintext, refs and masks
+        # compute ranges of keys (same length for all modules to keep it simple)
         modules = [single_worker_module] if single_worker_module is not None else self._modules
-        for m in modules:
+        total_range = end_fixed - start_fixed + 1
+        each_range = total_range // len(modules)
+
+        # set plaintext, refs and masks and finally key ranges
+        for idx, m in enumerate(modules):
             m.cmd_des_set_plaintext(plaintext)
-            assert m.cmd_des_get_plaintext() == plaintext
+            m.cmd_des_set_ref(ref0, 0)
             m.cmd_des_set_ref(ref1, 1)
-            m.cmd_des_set_ref(ref2, 2)
+            m.cmd_des_set_mask(mask0, 0)
             m.cmd_des_set_mask(mask1, 1)
-            m.cmd_des_set_mask(mask2, 2)
+            m.cmd_des_set_new_results_status(True)
+            tmp_start = start_fixed + idx * each_range
+            tmp_end = min(start_fixed + (idx + 1) * each_range - 1, end_fixed)
+            m.cmd_des_set_key_range(
+                (tmp_start << self._modules[0].variable_part_width).to_bytes(7),
+                (tmp_end << self._modules[0].variable_part_width).to_bytes(7))
 
-        # set keys for each worker in each module, launch and do polling
+        # poll and get results
         results = []
-        current_fixed = start_fixed
-        first_time = {m: [True] * m.workers_nbr for m in modules}
-        workers = [(m, w_idx) for m in modules for w_idx in range(m.workers_nbr)] if single_worker_module is None \
-            else [(single_worker_module, single_worker_idx)]
+        status = [DESStatus.ERROR] * len(modules)
         last_time_1s = time()
-        while workers:
-            for m, worker_idx in workers:
-                if m.cmd_des_result_available(worker_idx) and not first_time[m][worker_idx]:
-                    res = Result(*m.cmd_des_get_result(worker_idx))
-                    self.logger.debug(f"Result found: {res}")
-                    results.append(res)
-                elif m.cmd_des_ended(worker_idx) or first_time[m][worker_idx]:
-                    first_time[m][worker_idx] = False
+        while not all([i == DESStatus.FINISHED for i in status]):
+            for idx, m in enumerate(modules):
+                # update status
+                status[idx] = m.cmd_des_get_status()
 
-                    if current_fixed > end_fixed:  # this worker has finished
-                        workers.remove((m, worker_idx))
-                        continue
-
-                    m.cmd_des_set_fixed_key(current_fixed.to_bytes(math.ceil(m.fixed_part_width / 8)),
-                                            worker_idx)  # set key
-                    m.cmd_des_reset(1 << worker_idx)  # launch
-                    current_fixed += 1
+                # get results
+                results += [Result(*r) for r in m.cmd_des_get_results()]
 
             # get temperature every second
             if time() - last_time_1s > 1:
@@ -178,7 +174,23 @@ class DESCracker(LoggingMixin):
 
             # check timeout
             if timeout and time() - begin_time > timeout:
-                raise DESCrackerTimeoutError(f"Timeout occurred during the exhaust!", results)
+                exit_timeout = True
+                # disable new results recording
+                for m in modules:
+                    m.cmd_des_set_new_results_status(False)
+                break
+
+        # get all remaining results from all modules
+        for m in modules:
+            while True:
+                res = [Result(*r) for r in m.cmd_des_get_results()]
+                if len(res) == 0:
+                    break
+                results += res
+
+        # handle timeout
+        if exit_timeout:
+            raise DESCrackerTimeoutError(f"Timeout occurred during the exhaust!", results)
 
         return results, real_start_key, real_end_key
 
@@ -215,7 +227,8 @@ class DESCracker(LoggingMixin):
         self.logger.info(
             f"Benchmark {'(all_match)' if all_match else ''} on {number_of_keys_real:_} finished in {elapsed:.02f}s!")
         self.logger.info(f"It corresponds to {int(number_of_keys_real / elapsed):_} keys/s")
-        self.logger.info(f"Exhaust on 2**56 would take {pretty_str_seconds(int(2 ** 56 * elapsed / number_of_keys_real))}")
+        self.logger.info(
+            f"Exhaust on 2**56 would take {pretty_str_seconds(int(2 ** 56 * elapsed / number_of_keys_real))}")
         return elapsed
 
     def test(self):
@@ -228,7 +241,7 @@ class DESCracker(LoggingMixin):
             for w in range(m.workers_nbr):
                 self.logger.info(f"Beginning of tests on module {m.ip}, worker {w}")
                 # test if it stops when valid key is found on REF1 and REF2 then resume and end
-                for ref_nbr in (1, 2):
+                for ref_nbr in (0, 1):
                     self.logger.info(f"Testing single match on REF{ref_nbr}")
                     plaintext = bytes.fromhex('123456ABCD132536')
                     valid_key = bytes.fromhex('ab7420c266f36e')
@@ -237,26 +250,26 @@ class DESCracker(LoggingMixin):
                     start_key = bytes.fromhex('ab7420c266f350')
                     end_key = bytes.fromhex('ab7420c266f380')
                     try:
-                        if ref_nbr == 1:
+                        if ref_nbr == 0:
                             results, _, _ = self.exhaust_keys(plaintext,
-                                                        ref,
-                                                        mask,
-                                                        start_key,
-                                                        end_key,
-                                                        single_worker_module=m,
-                                                        single_worker_idx=w,
-                                                        timeout=100)
+                                                              ref,
+                                                              mask,
+                                                              start_key,
+                                                              end_key,
+                                                              single_worker_module=m,
+                                                              single_worker_idx=w,
+                                                              timeout=100)
                         else:
                             results, _, _ = self.exhaust_keys(plaintext,
-                                                        bytes([0xff] * 8),
-                                                        bytes([0x00] * 8),
-                                                        start_key,
-                                                        end_key,
-                                                        ref,
-                                                        mask,
-                                                        single_worker_module=m,
-                                                        single_worker_idx=w,
-                                                        timeout=100)
+                                                              bytes([0xff] * 8),
+                                                              bytes([0x00] * 8),
+                                                              start_key,
+                                                              end_key,
+                                                              ref,
+                                                              mask,
+                                                              single_worker_module=m,
+                                                              single_worker_idx=w,
+                                                              timeout=100)
                     except DESCrackerTimeoutError:
                         raise DESCrackerError(f"Module {m.ip} (worker {w}) did not finish within 100s")
 
@@ -277,22 +290,24 @@ class DESCracker(LoggingMixin):
                 end_key = (9).to_bytes(7)
                 try:
                     self.exhaust_keys(plaintext,
-                                                ref,
-                                                mask,
-                                                start_key,
-                                                end_key,
-                                                single_worker_module=m,
-                                                single_worker_idx=w,
-                                                timeout=0.5)
+                                      ref,
+                                      mask,
+                                      start_key,
+                                      end_key,
+                                      single_worker_module=m,
+                                      single_worker_idx=w,
+                                      timeout=0.5)
                 except DESCrackerTimeoutError as exc:
                     results = exc.results
                 else:
                     raise DESCrackerError(f"Exhaust should have timeout but did not")
 
+                results = [int.from_bytes(r.key) for r in results]
+                results.sort()
                 for i in range(len(results)):
-                    if results[i].key != i.to_bytes(7):
+                    if results[i] != i:
                         raise DESCrackerError(f"Bad result found for key {i} "
-                                              f"(expected {i.to_bytes(7).hex(' ', 4)}, got {results[i].key.hex(' ', 4)})")
+                                              f"(expected {i.to_bytes(7).hex(' ', 4)}, got {results[i].to_bytes(7).hex(' ', 4)})")
 
             self.logger.info(f"Module {m.ip} works well")
 
@@ -310,7 +325,7 @@ if __name__ == '__main__':
     sh = logging.StreamHandler()
     sh.setLevel(logging.INFO)
 
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter('%(asctime)s - %(name)s  - %(levelname)s - %(message)s')
     fh.setFormatter(formatter)
     sh.setFormatter(formatter)
 

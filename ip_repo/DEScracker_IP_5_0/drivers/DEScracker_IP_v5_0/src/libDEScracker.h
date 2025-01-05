@@ -12,14 +12,14 @@
 #define DESCRACKER_IP_RESETS_OFFSET               1*4
 #define DESCRACKER_IP_PLAINTEXT_HIGH_OFFSET       2*4
 #define DESCRACKER_IP_PLAINTEXT_LOW_OFFSET        3*4
-#define DESCRACKER_IP_MASK1_HIGH_OFFSET           4*4
-#define DESCRACKER_IP_MASK1_LOW_OFFSET            5*4
-#define DESCRACKER_IP_MASK2_HIGH_OFFSET           6*4
-#define DESCRACKER_IP_MASK2_LOW_OFFSET            7*4
-#define DESCRACKER_IP_REF1_HIGH_OFFSET            8*4
-#define DESCRACKER_IP_REF1_LOW_OFFSET             9*4
-#define DESCRACKER_IP_REF2_HIGH_OFFSET            10*4
-#define DESCRACKER_IP_REF2_LOW_OFFSET             11*4
+#define DESCRACKER_IP_MASK0_HIGH_OFFSET           4*4
+#define DESCRACKER_IP_MASK0_LOW_OFFSET            5*4
+#define DESCRACKER_IP_MASK1_HIGH_OFFSET           6*4
+#define DESCRACKER_IP_MASK1_LOW_OFFSET            7*4
+#define DESCRACKER_IP_REF0_HIGH_OFFSET            8*4
+#define DESCRACKER_IP_REF0_LOW_OFFSET             9*4
+#define DESCRACKER_IP_REF1_HIGH_OFFSET            10*4
+#define DESCRACKER_IP_REF1_LOW_OFFSET             11*4
 #define DESCRACKER_IP_ENDEDOUTS_OFFSET            12*4
 #define DESCRACKER_IP_RESULTSAVAILABLE_OFFSET     13*4
 #define DESCRACKER_IP_RESULTSFULL_OFFSET          14*4
@@ -126,5 +126,6 @@ unsigned int DESCracker_GetWorker(DESCracker *InstancePtr);
 void DESCracker_SetFixedKey(DESCracker *InstancePtr, u32 key);
 u32 DESCracker_GetFixedKey(DESCracker *InstancePtr);
 void DESCracker_GetResult(DESCracker *InstancePtr, unsigned int *match_nbr, u64 *key);
+u64 DESCracker_GetResultRaw(DESCracker *InstancePtr);
 
 #endif // LIBDESCRACKER_H
