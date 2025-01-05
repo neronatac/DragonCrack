@@ -78,6 +78,7 @@ void process_general(u8 cmd, u8 len, u8* data)
 	case CMD_GET_VERSION:
 		add_int_to_response(5);  // major
 		add_int_to_response(0);  // minor
+		break;
 
 	case CMD_ECHO:
 		add_u8_buf_to_response(data, len);

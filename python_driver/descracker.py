@@ -73,7 +73,7 @@ class DESCracker(LoggingMixin):
                      mask2: bytes | None = None,
                      single_worker_module: DESCrackerModule | None = None,
                      single_worker_idx: int | None = None,
-                     timeout: float | None = None) -> list[Result]:
+                     timeout: float | None = None) -> tuple[list[Result], int, int]:
         """
         Exhaust keys on all workers (blocking until it finishes or it timeouts) and return matches.
         :param plaintext: plaintext to use
@@ -86,7 +86,7 @@ class DESCracker(LoggingMixin):
         :param single_worker_module: if defined, does the exhaust only on the first worker of this module
         :param single_worker_idx: index of the worker to work with in module given in previous parameter
         :param timeout: time in seconds at which it raises a DESCrackerTimeoutError (results are in it)
-        :return list of results
+        :return list of results and start and end keys that were actually exhausted
         """
         # param checks
         if len(plaintext) != 8:
@@ -127,10 +127,12 @@ class DESCracker(LoggingMixin):
         # compute fixed part of keys
         start_fixed = int.from_bytes(start) >> self._modules[0].variable_part_width
         end_fixed = int.from_bytes(end) >> self._modules[0].variable_part_width
+        real_start_key = start_fixed << self._modules[0].variable_part_width
+        real_end_key = ((end_fixed + 1) << self._modules[0].variable_part_width) - 1
 
         self.logger.info(
-            f"Actually from 0x{(start_fixed << self._modules[0].variable_part_width).to_bytes(7).hex(' ', 4)} "
-            f"to 0x{(((end_fixed + 1) << self._modules[0].variable_part_width) - 1).to_bytes(7).hex(' ', 4)}")
+            f"Actually from 0x{real_start_key.to_bytes(7).hex(' ', 4)} "
+            f"to 0x{real_end_key.to_bytes(7).hex(' ', 4)}")
         self.logger.info(f"{end_fixed - start_fixed + 1} chunks of {self._modules[0].variable_part_width} bits each")
 
         # reset modules to clean them then set plaintext, refs and masks
@@ -178,7 +180,7 @@ class DESCracker(LoggingMixin):
             if timeout and time() - begin_time > timeout:
                 raise DESCrackerTimeoutError(f"Timeout occurred during the exhaust!", results)
 
-        return results
+        return results, real_start_key, real_end_key
 
     # ######################################################################
     # ### TESTING
@@ -203,14 +205,17 @@ class DESCracker(LoggingMixin):
         # launch exhaust
         begin_time = time()
         self.logger.debug(f"Benchmark begin time: {begin_time}")
-        self.exhaust_keys(plaintext, ref1, mask1, bytes(7), last_key)
+        _, real_start, real_end = self.exhaust_keys(plaintext, ref1, mask1, bytes(7), last_key)
+
+        # get real number of keys
+        number_of_keys_real = real_end - real_start
 
         # it's done!
         elapsed = time() - begin_time
         self.logger.info(
-            f"Benchmark {'(all_match)' if all_match else ''} on {number_of_keys:_} finished in {elapsed:.02f}s!")
-        self.logger.info(f"It corresponds to {int(number_of_keys / elapsed):_} keys/s")
-        self.logger.info(f"Exhaust on 2**56 would take {pretty_str_seconds(int(2 ** 56 * elapsed / number_of_keys))}")
+            f"Benchmark {'(all_match)' if all_match else ''} on {number_of_keys_real:_} finished in {elapsed:.02f}s!")
+        self.logger.info(f"It corresponds to {int(number_of_keys_real / elapsed):_} keys/s")
+        self.logger.info(f"Exhaust on 2**56 would take {pretty_str_seconds(int(2 ** 56 * elapsed / number_of_keys_real))}")
         return elapsed
 
     def test(self):
@@ -233,7 +238,7 @@ class DESCracker(LoggingMixin):
                     end_key = bytes.fromhex('ab7420c266f380')
                     try:
                         if ref_nbr == 1:
-                            results = self.exhaust_keys(plaintext,
+                            results, _, _ = self.exhaust_keys(plaintext,
                                                         ref,
                                                         mask,
                                                         start_key,
@@ -242,7 +247,7 @@ class DESCracker(LoggingMixin):
                                                         single_worker_idx=w,
                                                         timeout=100)
                         else:
-                            results = self.exhaust_keys(plaintext,
+                            results, _, _ = self.exhaust_keys(plaintext,
                                                         bytes([0xff] * 8),
                                                         bytes([0x00] * 8),
                                                         start_key,
@@ -321,7 +326,7 @@ if __name__ == '__main__':
     # do benchmarks
     number = 200_000_000_000
     t = cracker.benchmark(number)
-    print(f"Benchmark on {number:_} done in {t} seconds")
+    print(f"Benchmark on ~{number:_} done in {t} seconds")
 
     # number = 10_000
     # t = cracker.benchmark(number, True)

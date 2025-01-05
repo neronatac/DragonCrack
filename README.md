@@ -63,7 +63,7 @@ When no match is found:
 |   V2    |  859_516_952  |    2y 240d 7h 29m 48s     |         156 %         |
 |   V3    | 2_014_867_336 |     1y 48d 22h 9m 7s      |         234 %         |
 |   V4    | 2_859_176_973 |     291d 16h 36m 55s      |         142 %         |
-|   V5    | 4_588_143_844 |     181d 18h 32m 53s      |         160 %         |
+|   V5    | 4_644_101_381 |     179d 13h 58m 59s      |         162 %         |
 
 ### V0 - Proof of concept
 A single DES worker is implemented, using a very slow clock. Implementation is as naive as possible (even dumb on 

@@ -5,7 +5,7 @@ from errors import HWVersionError, DESCrackerError
 from utils import LoggingMixin
 
 # version of driver, must match with HW version
-VERSION = (4, 0)
+VERSION = (5, 0)
 
 
 class Command(Enum):
