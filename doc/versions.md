@@ -186,3 +186,9 @@ The C and Python drivers have been modified so that handling of the exhaust is n
 driver.
 
 The difference in performance is 1%, which does not explain the difference between theoretical throughput and real one.
+Indeed, this difference is actually caused by the fact that benchmark were requested using 200e9 keys. Thus, benchmark
+were done on 201_863_462_911 precisely: 47 chunks of 32-bit. As there is 29 workers is the module, it worked at 100%
+load to handle 29 first chunks and then only 18 workers were used. A drop in performance is then measured.
+
+Benchmark has been modified so that 58 chunks are to be exhausted, maximising the performance. The extrapolation to 
+2**56 keys is still valid in this case as it would work at 100% load almost all the time.

@@ -339,7 +339,7 @@ if __name__ == '__main__':
     # cracker.test()
 
     # do benchmarks
-    number = 200_000_000_000
+    number = 2**32 * 29 * 2 - 1
     t = cracker.benchmark(number)
     print(f"Benchmark on ~{number:_} done in {t} seconds")
 
